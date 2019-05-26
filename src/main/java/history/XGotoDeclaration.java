@@ -1,0 +1,48 @@
+package history;
+
+import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction;
+import com.intellij.codeInsight.navigation.actions.GotoTypeDeclarationAction;
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
+import com.intellij.openapi.fileEditor.impl.EditorWindow;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
+import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+public class XGotoDeclaration extends AnAction implements DumbAware {
+  private final AnAction myDelegate = ActionManager.getInstance().getAction(IdeActions.ACTION_GOTO_DECLARATION);
+
+  @Override
+  public void actionPerformed(@NotNull AnActionEvent e) {
+    Project project = e.getProject();
+    Editor editor = FileEditorManagerEx.getInstanceEx(project).getSelectedTextEditor();
+    if (editor == null) {
+      return;
+    }
+    PsiElement[] elements = GotoDeclarationAction.findAllTargetElements(project, editor, editor.getCaretModel().getOffset());
+    setUseCurrentWindow(elements, true);
+    try {
+      myDelegate.actionPerformed(e);
+    } finally {
+      setUseCurrentWindow(elements, null);
+    }
+  }
+
+  private void setUseCurrentWindow(PsiElement[] targetElements, @Nullable Boolean value) {
+    for (PsiElement element : targetElements) {
+      element.putUserData(FileEditorManager.USE_CURRENT_WINDOW, value);
+    }
+  }
+
+  @Override
+  public void update(@NotNull AnActionEvent e) {
+    myDelegate.update(e);
+  }
+}

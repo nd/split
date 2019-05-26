@@ -1,0 +1,27 @@
+<idea-plugin>
+    <id>SplitHistory</id>
+    <name>SplitHistory</name>
+    <vendor>me</vendor>
+
+    <idea-version since-build="191.1"/>
+
+    <version>1</version>
+
+    <description>
+        Plugin provides per window split 'back', 'forward', and 'go to declaration' actions.
+    </description>
+
+    <project-components>
+        <component>
+            <implementation-class>history.XManager</implementation-class>
+        </component>
+    </project-components>
+
+    <actions>
+        <action class="history.XBack" text="Per Split Back"/>
+        <action class="history.XForward" text="Per Split Forward"/>
+        <action class="history.XGotoDeclaration" text="Per Split Go To Declaration"/>
+    </actions>
+
+    <depends>com.intellij.modules.lang</depends>
+</idea-plugin>
