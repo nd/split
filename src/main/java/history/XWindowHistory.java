@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
 import com.intellij.openapi.fileEditor.ex.FileEditorWithProvider;
+import com.intellij.openapi.fileEditor.impl.EditorWindow;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -125,6 +126,18 @@ class XWindowHistory {
   synchronized boolean canForward() {
     int forwardIndex = getForwardIndex();
     return forwardIndex <= myMaxIndex && myPlaces.get(forwardIndex) != null;
+  }
+
+  @NotNull
+  synchronized XWindowHistory copyForWindow(@NotNull EditorWindow window) {
+    XWindowHistory copy = new XWindowHistory(myProject);
+    for (IdeDocumentHistoryImpl.PlaceInfo place : myPlaces) {
+      copy.myPlaces.add(new IdeDocumentHistoryImpl.PlaceInfo(place.getFile(), place.getNavigationState(),
+              place.getEditorTypeId(), window, place.getCaretPosition()));
+    }
+    copy.myIndex = myIndex;
+    copy.myMaxIndex = myMaxIndex;
+    return copy;
   }
 
   // code for getting current placeInfo from IdeDocumentHistoryImpl:

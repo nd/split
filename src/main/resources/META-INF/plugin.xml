@@ -18,9 +18,11 @@
     </project-components>
 
     <actions>
-        <action class="history.XBack" text="Per Split Back"/>
-        <action class="history.XForward" text="Per Split Forward"/>
-        <action class="history.XGotoDeclaration" text="Per Split Go To Declaration"/>
+        <action class="history.XBack" text="XBack"/>
+        <action class="history.XForward" text="XForward"/>
+        <action class="history.XGotoDeclaration" text="XGoToDeclaration"/>
+        <action class="history.XSplitV" text="XSplitV"/>
+        <action class="history.XSplitH" text="XSplitH"/>
     </actions>
 
     <depends>com.intellij.modules.lang</depends>

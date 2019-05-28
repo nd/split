@@ -37,6 +37,15 @@ public class XManager implements Disposable {
     });
   }
 
+  void copyHistory(@Nullable EditorWindow src, @Nullable EditorWindow dst) {
+    if (src != null && dst != null) {
+      XWindowHistory history = getHistory(src);
+      if (history != null) {
+        myHistories.put(dst, history.copyForWindow(dst));
+      }
+    }
+  }
+
   private void cleanObsoleteHistories() {
     EditorWindow[] live = FileEditorManagerEx.getInstanceEx(myProject).getWindows();
     List<EditorWindow> obsolete = ContainerUtil.newSmartList();
