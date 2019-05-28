@@ -20,6 +20,8 @@ public class XBack extends AnAction implements DumbAware {
   public void update(@NotNull AnActionEvent e) {
     EditorWindow currentWindow = FileEditorManagerEx.getInstanceEx(e.getProject()).getCurrentWindow();
     XWindowHistory history = XManager.getInstance(e.getProject()).getHistory(currentWindow);
-    e.getPresentation().setEnabled(history.canBack());
+    if (history != null) {
+      e.getPresentation().setEnabled(history.canBack());
+    }
   }
 }

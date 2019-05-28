@@ -20,6 +20,8 @@ public class XForward extends AnAction implements DumbAware {
   public void update(@NotNull AnActionEvent e) {
     EditorWindow currentWindow = FileEditorManagerEx.getInstanceEx(e.getProject()).getCurrentWindow();
     XWindowHistory history = XManager.getInstance(e.getProject()).getHistory(currentWindow);
-    e.getPresentation().setEnabled(history.canForward());
+    if (history != null) {
+      e.getPresentation().setEnabled(history.canForward());
+    }
   }
 }
