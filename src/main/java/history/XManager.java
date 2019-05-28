@@ -46,6 +46,14 @@ public class XManager implements Disposable {
     }
   }
 
+  void addCurrentPlace(@Nullable EditorWindow window) {
+    XWindowHistory history = window != null ? getHistory(window) : null;
+    IdeDocumentHistoryImpl.PlaceInfo place = history.getPlaceInfo(window);
+    if (place != null) {
+      history.addPlace(place);
+    }
+  }
+
   private void cleanObsoleteHistories() {
     EditorWindow[] live = FileEditorManagerEx.getInstanceEx(myProject).getWindows();
     List<EditorWindow> obsolete = ContainerUtil.newSmartList();

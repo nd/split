@@ -23,6 +23,7 @@
         <action class="history.XGotoDeclaration" text="XGoToDeclaration"/>
         <action class="history.XSplitV" text="XSplitV"/>
         <action class="history.XSplitH" text="XSplitH"/>
+        <action class="history.XOpenInNewSplit" text="XOpenInNewSplit"/>
     </actions>
 
     <depends>com.intellij.modules.lang</depends>

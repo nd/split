@@ -7,6 +7,7 @@ import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
 import com.intellij.openapi.fileEditor.ex.FileEditorWithProvider;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
+import com.intellij.openapi.fileEditor.impl.EditorWithProviderComposite;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -132,15 +133,20 @@ class XWindowHistory {
   synchronized XWindowHistory copyForWindow(@NotNull EditorWindow window) {
     XWindowHistory copy = new XWindowHistory(myProject);
     for (IdeDocumentHistoryImpl.PlaceInfo place : myPlaces) {
-      copy.myPlaces.add(new IdeDocumentHistoryImpl.PlaceInfo(place.getFile(), place.getNavigationState(),
+      copy.addPlace(new IdeDocumentHistoryImpl.PlaceInfo(place.getFile(), place.getNavigationState(),
               place.getEditorTypeId(), window, place.getCaretPosition()));
     }
-    copy.myIndex = myIndex;
-    copy.myMaxIndex = myMaxIndex;
     return copy;
   }
 
   // code for getting current placeInfo from IdeDocumentHistoryImpl:
+  @Nullable
+  IdeDocumentHistoryImpl.PlaceInfo getPlaceInfo(@NotNull EditorWindow window) {
+    EditorWithProviderComposite selectedEditor = window.getSelectedEditor();
+    FileEditorWithProvider editor = selectedEditor != null ? selectedEditor.getSelectedWithProvider() : null;
+    return editor != null ? createPlaceInfo(editor.getFileEditor(), editor.getProvider()) : null;
+  }
+
   @Nullable
   private IdeDocumentHistoryImpl.PlaceInfo getCurrentPlaceInfo() {
     FileEditorWithProvider editor = getSelectedEditor();
