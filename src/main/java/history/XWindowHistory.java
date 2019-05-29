@@ -79,7 +79,7 @@ class XWindowHistory {
   synchronized void back() {
     if (canBack()) {
       if (myIndex == myMaxIndex) {
-        if (addPlace(getCurrentPlaceInfo())) {
+        if (addPlace(XManager.getCurrentPlaceInfo(myProject))) {
           myIndex--;
         }
       }
@@ -137,46 +137,5 @@ class XWindowHistory {
               place.getEditorTypeId(), window, place.getCaretPosition()));
     }
     return copy;
-  }
-
-  // code for getting current placeInfo from IdeDocumentHistoryImpl:
-  @Nullable
-  IdeDocumentHistoryImpl.PlaceInfo getPlaceInfo(@NotNull EditorWindow window) {
-    EditorWithProviderComposite selectedEditor = window.getSelectedEditor();
-    FileEditorWithProvider editor = selectedEditor != null ? selectedEditor.getSelectedWithProvider() : null;
-    return editor != null ? createPlaceInfo(editor.getFileEditor(), editor.getProvider()) : null;
-  }
-
-  @Nullable
-  private IdeDocumentHistoryImpl.PlaceInfo getCurrentPlaceInfo() {
-    FileEditorWithProvider editor = getSelectedEditor();
-    return editor != null ? createPlaceInfo(editor.getFileEditor(), editor.getProvider()) : null;
-  }
-
-  @Nullable
-  protected FileEditorWithProvider getSelectedEditor() {
-    FileEditorManagerEx editorManager = FileEditorManagerEx.getInstanceEx(myProject);
-    VirtualFile file = editorManager.getCurrentFile();
-    return file == null ? null : editorManager.getSelectedEditorWithProvider(file);
-  }
-
-  protected IdeDocumentHistoryImpl.PlaceInfo createPlaceInfo(@NotNull final FileEditor fileEditor, final FileEditorProvider fileProvider) {
-    if (!fileEditor.isValid()) {
-      return null;
-    }
-    FileEditorManagerEx editorManager = FileEditorManagerEx.getInstanceEx(myProject);
-    VirtualFile file = editorManager.getFile(fileEditor);
-    FileEditorState state = fileEditor.getState(FileEditorStateLevel.NAVIGATION);
-    return new IdeDocumentHistoryImpl.PlaceInfo(file, state, fileProvider.getEditorTypeId(), editorManager.getCurrentWindow(), getCaretPosition(fileEditor));
-  }
-
-  @Nullable
-  private static RangeMarker getCaretPosition(@NotNull FileEditor fileEditor) {
-    if (!(fileEditor instanceof TextEditor)) {
-      return null;
-    }
-    Editor editor = ((TextEditor) fileEditor).getEditor();
-    int offset = editor.getCaretModel().getOffset();
-    return editor.getDocument().createRangeMarker(offset, offset);
   }
 }

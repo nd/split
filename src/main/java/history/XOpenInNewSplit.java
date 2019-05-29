@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
+import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
@@ -34,9 +35,9 @@ public class XOpenInNewSplit extends AnAction implements DumbAware {
     int offset = editor.getCaretModel().getPrimaryCaret().getOffset();
     CommandProcessor.getInstance().executeCommand(project, () -> {
       manager.unsplitAllWindow();
-      EditorWindow currentWindow = manager.getCurrentWindow();
-      currentWindow.closeAllExcept(currentWindow.getSelectedFile());
-      currentWindow.split(SwingConstants.VERTICAL, true, null, true);
+      EditorWindow srcWindow = manager.getCurrentWindow();
+      srcWindow.closeAllExcept(srcWindow.getSelectedFile());
+      srcWindow.split(SwingConstants.VERTICAL, true, null, true);
       Editor targetEditor = manager.getSelectedTextEditor();
       // prevent idea from opening file in other editor:
       DataManager.registerDataProvider(editor.getComponent(), new DataProvider() {
@@ -51,10 +52,15 @@ public class XOpenInNewSplit extends AnAction implements DumbAware {
       });
       OpenSourceUtil.navigate(true, false, navs);
       Editor resultEditor = manager.getSelectedTextEditor();
-      EditorWindow openedWindow = manager.getCurrentWindow();
+      EditorWindow dstWindow = manager.getCurrentWindow();
       XManager xmanager = XManager.getInstance(project);
-      xmanager.copyHistory(currentWindow, openedWindow);
-      xmanager.addCurrentPlace(openedWindow);
+      xmanager.copyHistory(srcWindow, dstWindow);
+      IdeDocumentHistoryImpl.PlaceInfo srcPlace = XManager.getPlaceInfo(project, srcWindow);
+      XWindowHistory dstHistory = xmanager.getHistory(dstWindow);
+      if (srcPlace != null && dstHistory != null) {
+        dstHistory.addPlace(XManager.replaceWindow(srcPlace, dstWindow));
+      }
+      xmanager.addCurrentPlace(dstWindow);
     }, "XOpenInNewSplit", null);
   }
 }
