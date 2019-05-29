@@ -5,10 +5,11 @@
 
     <idea-version since-build="191.1"/>
 
-    <version>2</version>
+    <version>3</version>
 
     <description>
-        Plugin provides per window split 'back', 'forward', and 'go to declaration' actions.
+        Plugin provides 'back', 'forward', 'go to declaration', 'split', and 'open in new split' actions
+        preserving per window split navigation history. All actions start with 'X' to simplify search in a keymap.
     </description>
 
     <project-components>
