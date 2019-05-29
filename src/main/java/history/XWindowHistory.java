@@ -1,18 +1,11 @@
 package history;
 
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.RangeMarker;
-import com.intellij.openapi.fileEditor.*;
-import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
-import com.intellij.openapi.fileEditor.ex.FileEditorWithProvider;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
-import com.intellij.openapi.fileEditor.impl.EditorWithProviderComposite;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +41,7 @@ class XWindowHistory {
     if (myNavigationInProgress) {
       return false;
     }
-    if (myIndex >= 0 && same(myPlaces.get(myIndex), place)) {
+    if (myIndex >= 0 && sameLine(myPlaces.get(myIndex), place)) {
       return false;
     }
     myIndex++;
@@ -62,8 +55,8 @@ class XWindowHistory {
     return true;
   }
 
-  private static boolean same(@NotNull IdeDocumentHistoryImpl.PlaceInfo place1,
-                              @NotNull IdeDocumentHistoryImpl.PlaceInfo place2) {
+  private static boolean sameLine(@NotNull IdeDocumentHistoryImpl.PlaceInfo place1,
+                                  @NotNull IdeDocumentHistoryImpl.PlaceInfo place2) {
     if (place1.getFile().getPath().equals(place2.getFile().getPath())) {
       RangeMarker pos1 = place1.getCaretPosition();
       RangeMarker pos2 = place2.getCaretPosition();
@@ -76,15 +69,31 @@ class XWindowHistory {
     return false;
   }
 
+  private static boolean sameOffset(@NotNull IdeDocumentHistoryImpl.PlaceInfo place1,
+                                    @NotNull IdeDocumentHistoryImpl.PlaceInfo place2) {
+    if (place1.getFile().getPath().equals(place2.getFile().getPath())) {
+      RangeMarker pos1 = place1.getCaretPosition();
+      RangeMarker pos2 = place2.getCaretPosition();
+      return pos1 != null && pos2 != null && pos1.getStartOffset() == pos2.getStartOffset();
+    }
+    return false;
+  }
+
   synchronized void back() {
     if (canBack()) {
+      IdeDocumentHistoryImpl.PlaceInfo currentPlace = XManager.getCurrentPlaceInfo(myProject);
       if (myIndex == myMaxIndex) {
-        if (addPlace(XManager.getCurrentPlaceInfo(myProject))) {
+        if (addPlace(currentPlace)) {
           myIndex--;
         }
       }
-      IdeDocumentHistoryImpl.PlaceInfo place = myPlaces.get(myIndex--);
-      gotoPlace(place);
+      IdeDocumentHistoryImpl.PlaceInfo place = null;
+      do {
+        place = myPlaces.get(myIndex--);
+      } while (myIndex>= 0 && place != null && sameOffset(place, currentPlace));
+      if (place != null) {
+        gotoPlace(place);
+      }
     }
   }
 
