@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>SplitHistory</id>
-    <name>SplitHistory</name>
+    <name>Split</name>
     <vendor>me</vendor>
 
     <idea-version since-build="191.1"/>
