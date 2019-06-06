@@ -63,7 +63,9 @@ class XWindowHistory {
       if (pos1 != null && pos2 != null) {
         Document doc1 = pos1.getDocument();
         Document doc2 = pos2.getDocument();
-        return doc1.getLineNumber(pos1.getStartOffset()) == doc2.getLineNumber(pos2.getStartOffset());
+        return pos1.getStartOffset() < doc1.getTextLength() &&
+               pos2.getStartOffset() < doc2.getTextLength() &&
+               doc1.getLineNumber(pos1.getStartOffset()) == doc2.getLineNumber(pos2.getStartOffset());
       }
     }
     return false;
