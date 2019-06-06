@@ -9,9 +9,7 @@ import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.DumbAware;
-import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
 import com.intellij.util.OpenSourceUtil;
 import org.jetbrains.annotations.NotNull;
@@ -25,14 +23,12 @@ public class XOpenInNewSplit extends AnAction implements DumbAware {
   public void actionPerformed(@NotNull AnActionEvent e) {
     DataContext data = e.getDataContext();
     Project project = e.getProject();
-    Editor editor = FileEditorManagerEx.getInstanceEx(project).getSelectedTextEditor();
+    Editor editor = project != null ? FileEditorManagerEx.getInstanceEx(project).getSelectedTextEditor() : null;
     Navigatable[] navs = CommonDataKeys.NAVIGATABLE_ARRAY.getData(data);
-    if (editor == null || project == null || navs == null || navs.length == 0) {
+    if (editor == null || navs == null || navs.length == 0) {
       return;
     }
     FileEditorManagerEx manager = FileEditorManagerEx.getInstanceEx(project);
-    VirtualFile file = manager.getCurrentWindow().getSelectedFile();
-    int offset = editor.getCaretModel().getPrimaryCaret().getOffset();
     CommandProcessor.getInstance().executeCommand(project, () -> {
       manager.unsplitAllWindow();
       EditorWindow srcWindow = manager.getCurrentWindow();

@@ -82,6 +82,9 @@ class XWindowHistory {
   synchronized void back() {
     if (canBack()) {
       IdeDocumentHistoryImpl.PlaceInfo currentPlace = XManager.getCurrentPlaceInfo(myProject);
+      if (currentPlace == null) {
+        return;
+      }
       if (myIndex == myMaxIndex) {
         if (addPlace(currentPlace)) {
           myIndex--;

@@ -1,12 +1,11 @@
 package history;
 
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
 import com.intellij.util.ArrayUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,7 +18,11 @@ public class XSplit extends AnAction implements DumbAware {
 
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
-    FileEditorManagerEx editorManager = FileEditorManagerEx.getInstanceEx(e.getProject());
+    Project project = e.getProject();
+    if (project == null) {
+      return;
+    }
+    FileEditorManagerEx editorManager = FileEditorManagerEx.getInstanceEx(project);
     EditorWindow currentWindow = editorManager.getCurrentWindow();
     if (currentWindow == null) {
       return;
@@ -35,7 +38,7 @@ public class XSplit extends AnAction implements DumbAware {
       }
     }
     if (created != null) {
-      XManager.getInstance(e.getProject()).copyHistory(currentWindow, created);
+      XManager.getInstance(project).copyHistory(currentWindow, created);
     }
   }
 

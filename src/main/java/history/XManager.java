@@ -31,9 +31,10 @@ public class XManager implements Disposable {
     bus.subscribe(IdeDocumentHistoryImpl.RecentPlacesListener.TOPIC, new IdeDocumentHistoryImpl.RecentPlacesListener() {
       @Override
       public void recentPlaceAdded(@NotNull IdeDocumentHistoryImpl.PlaceInfo place, boolean isChanged) {
-        if (!isChanged) {
+        EditorWindow window = place.getWindow();
+        if (!isChanged && window != null) {
           cleanObsoleteHistories();
-          myHistories.computeIfAbsent(place.getWindow(), it -> new XWindowHistory(myProject)).addPlace(place);
+          myHistories.computeIfAbsent(window, it -> new XWindowHistory(myProject)).addPlace(place);
         }
       }
 
@@ -121,6 +122,9 @@ public class XManager implements Disposable {
     }
     FileEditorManagerEx editorManager = FileEditorManagerEx.getInstanceEx(project);
     VirtualFile file = editorManager.getFile(fileEditor);
+    if (file == null) {
+      return null;
+    }
     FileEditorState state = fileEditor.getState(FileEditorStateLevel.NAVIGATION);
     return new IdeDocumentHistoryImpl.PlaceInfo(file, state, fileProvider.getEditorTypeId(), editorManager.getCurrentWindow(), getCaretPosition(fileEditor));
   }
@@ -133,5 +137,14 @@ public class XManager implements Disposable {
     Editor editor = ((TextEditor) fileEditor).getEditor();
     int offset = editor.getCaretModel().getOffset();
     return editor.getDocument().createRangeMarker(offset, offset);
+  }
+
+  @Nullable
+  static XWindowHistory getCurrentWindowHistory(@Nullable Project project) {
+    if (project == null) {
+      return null;
+    }
+    EditorWindow currentWindow = FileEditorManagerEx.getInstanceEx(project).getCurrentWindow();
+    return XManager.getInstance(project).getHistory(currentWindow);
   }
 }
