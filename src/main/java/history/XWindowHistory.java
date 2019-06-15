@@ -95,7 +95,7 @@ class XWindowHistory {
       IdeDocumentHistoryImpl.PlaceInfo place = null;
       do {
         place = myPlaces.get(myIndex--);
-      } while (myIndex>= 0 && place != null && sameOffset(place, currentPlace));
+      } while (myIndex >= 0 && place != null && sameOffset(place, currentPlace));
       if (place != null) {
         gotoPlace(place);
       }
@@ -128,7 +128,9 @@ class XWindowHistory {
   private synchronized void gotoPlace(@NotNull IdeDocumentHistoryImpl.PlaceInfo place) {
     try {
       myNavigationInProgress = true;
-      IdeDocumentHistoryImpl.getInstance(myProject).gotoPlaceInfo(place);
+      if (place.getFile().isValid()) {
+        IdeDocumentHistoryImpl.getInstance(myProject).gotoPlaceInfo(place);
+      }
     } finally {
       myNavigationInProgress = false;
     }
