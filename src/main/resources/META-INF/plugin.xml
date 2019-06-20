@@ -5,7 +5,7 @@
 
     <idea-version since-build="191.1"/>
 
-    <version>5</version>
+    <version>6</version>
 
     <description>
         Plugin provides 'back', 'forward', 'go to declaration', 'split', and 'open in new split' actions
