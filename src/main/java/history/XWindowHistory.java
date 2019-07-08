@@ -33,7 +33,7 @@ class XWindowHistory {
   private int myMaxIndex = -1;
   private volatile boolean myNavigationInProgress;
 
-  public XWindowHistory(@NotNull Project project) {
+  XWindowHistory(@NotNull Project project) {
     myProject = project;
   }
 
@@ -44,6 +44,11 @@ class XWindowHistory {
     if (myIndex >= 0 && sameLine(myPlaces.get(myIndex), place)) {
       return false;
     }
+    insertPlace(place);
+    return true;
+  }
+
+  private synchronized void insertPlace(@NotNull IdeDocumentHistoryImpl.PlaceInfo place) {
     myIndex++;
     if (myIndex < myPlaces.size()) {
       myPlaces.set(myIndex, place);
@@ -52,20 +57,26 @@ class XWindowHistory {
       myPlaces.add(place);
       myMaxIndex++;
     }
-    return true;
   }
 
   private static boolean sameLine(@NotNull IdeDocumentHistoryImpl.PlaceInfo place1,
                                   @NotNull IdeDocumentHistoryImpl.PlaceInfo place2) {
+    if (!place1.getFile().isValid() || place2.getFile().isValid()) {
+      return false;
+    }
     if (place1.getFile().getPath().equals(place2.getFile().getPath())) {
       RangeMarker pos1 = place1.getCaretPosition();
       RangeMarker pos2 = place2.getCaretPosition();
-      if (pos1 != null && pos2 != null) {
+      // abs check is an heuristic to not compute line number: if positions
+      // have more than 100 characters between them, consider them to be on
+      // different lines. Computing line seems to be expensive e.g. in decompiled
+      // files.
+      if (pos1 != null && pos2 != null && Math.abs(pos1.getStartOffset() - pos2.getStartOffset()) < 100) {
         Document doc1 = pos1.getDocument();
         Document doc2 = pos2.getDocument();
         return pos1.getStartOffset() < doc1.getTextLength() &&
-               pos2.getStartOffset() < doc2.getTextLength() &&
-               doc1.getLineNumber(pos1.getStartOffset()) == doc2.getLineNumber(pos2.getStartOffset());
+                pos2.getStartOffset() < doc2.getTextLength() &&
+                doc1.getLineNumber(pos1.getStartOffset()) == doc2.getLineNumber(pos2.getStartOffset());
       }
     }
     return false;
@@ -92,7 +103,7 @@ class XWindowHistory {
           myIndex--;
         }
       }
-      IdeDocumentHistoryImpl.PlaceInfo place = null;
+      IdeDocumentHistoryImpl.PlaceInfo place;
       do {
         place = myPlaces.get(myIndex--);
       } while (myIndex >= 0 && place != null && sameOffset(place, currentPlace));
@@ -149,7 +160,8 @@ class XWindowHistory {
   synchronized XWindowHistory copyForWindow(@NotNull EditorWindow window) {
     XWindowHistory copy = new XWindowHistory(myProject);
     for (IdeDocumentHistoryImpl.PlaceInfo place : myPlaces) {
-      copy.addPlace(new IdeDocumentHistoryImpl.PlaceInfo(place.getFile(), place.getNavigationState(),
+      // copy without checks for same line, it was checked when the original history was filled
+      copy.insertPlace(new IdeDocumentHistoryImpl.PlaceInfo(place.getFile(), place.getNavigationState(),
               place.getEditorTypeId(), window, place.getCaretPosition()));
     }
     return copy;
