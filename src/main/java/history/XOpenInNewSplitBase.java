@@ -7,12 +7,14 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
 import com.intellij.util.OpenSourceUtil;
 import org.jetbrains.annotations.NotNull;
@@ -22,9 +24,11 @@ import javax.swing.*;
 public class XOpenInNewSplitBase extends AnAction implements DumbAware {
 
   private final boolean myNavigateToNewSplit;
+  private final boolean mySwitchContext;
 
-  XOpenInNewSplitBase(boolean navigateToNewSplit) {
+  XOpenInNewSplitBase(boolean navigateToNewSplit, boolean switchContext) {
     myNavigateToNewSplit = navigateToNewSplit;
+    mySwitchContext = switchContext;
   }
 
   @Override
@@ -57,13 +61,23 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
         XManager xmanager = XManager.getInstance(project);
         xmanager.copyHistory(srcWindow, dstWindow);
         IdeDocumentHistoryImpl.PlaceInfo srcPlace = XManager.getPlaceInfo(project, srcWindow);
+        IdeDocumentHistoryImpl.PlaceInfo dstPlace = XManager.getPlaceInfo(project, dstWindow);
         XWindowHistory dstHistory = xmanager.getHistory(dstWindow);
         if (srcPlace != null && dstHistory != null) {
           dstHistory.addPlace(XManager.replaceWindow(srcPlace, dstWindow));
         }
         xmanager.addCurrentPlace(dstWindow);
         if (!myNavigateToNewSplit) {
+          // return back to src window
           manager.setCurrentWindow(manager.getNextWindow(dstWindow));
+        } else if (mySwitchContext && srcPlace != null && dstPlace != null) {
+          VirtualFile leftFile = srcPlace.getFile();
+          RangeMarker leftPosition = srcPlace.getCaretPosition();
+          VirtualFile rightFile = dstPlace.getFile();
+          RangeMarker rightPosition = dstPlace.getCaretPosition();
+          if (leftPosition != null && rightPosition != null) {
+            xmanager.pushContext(new XContext(leftFile, leftPosition.getStartOffset(), rightFile, rightPosition.getStartOffset()));
+          }
         }
       } finally {
         DataManager.removeDataProvider(srcEditorComponent);

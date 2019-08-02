@@ -2,6 +2,6 @@ package history;
 
 public class XViewInNewSplit extends XOpenInNewSplitBase {
   public XViewInNewSplit() {
-    super(false);
+    super(false, false);
   }
 }

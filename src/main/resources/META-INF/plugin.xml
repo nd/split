@@ -5,11 +5,12 @@
 
     <idea-version since-build="191.1"/>
 
-    <version>7</version>
+    <version>8</version>
 
     <description>
         Plugin provides 'back', 'forward', 'go to declaration', 'split', and 'open in new split' actions
-        preserving per window split navigation history + actions for increasing/decreasing split size.
+        preserving per window split navigation history + actions for increasing/decreasing split size and
+        operations on contexts.
         All actions start with 'X' to simplify search in a keymap.
     </description>
 
@@ -29,6 +30,9 @@
         <action class="history.XSplitDecSize" text="XSplitDecSize"/>
         <action class="history.XOpenInNewSplit" text="XOpenInNewSplit"/>
         <action class="history.XViewInNewSplit" text="XViewInNewSplit"/>
+        <action class="history.XOpenInNewContext" text="XOpenInNewContext"/>
+        <action class="history.XPushContext" text="XPushContext"/>
+        <action class="history.XPopContext" text="XPopContext"/>
     </actions>
 
     <depends>com.intellij.modules.lang</depends>

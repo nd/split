@@ -17,6 +17,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class XManager implements Disposable {
   private final Project myProject;
   private final Map<EditorWindow, XWindowHistory> myHistories = new ConcurrentHashMap<>();
+  private final List<XContext> myContexts = new ArrayList<>();
 
   public XManager(@NotNull Project project) {
     myProject = project;
@@ -146,5 +148,23 @@ public class XManager implements Disposable {
     }
     EditorWindow currentWindow = FileEditorManagerEx.getInstanceEx(project).getCurrentWindow();
     return XManager.getInstance(project).getHistory(currentWindow);
+  }
+
+  void pushContext(@NotNull XContext ctx) {
+    myContexts.add(ctx);
+  }
+
+  @Nullable
+  synchronized XContext popContext() {
+    XContext result = null;
+    if (!myContexts.isEmpty()) {
+      result = myContexts.remove(myContexts.size() - 1);
+    }
+    return result;
+  }
+
+  @Nullable
+  synchronized static XContext getCurrentContext(@Nullable Project project) {
+    return project != null ? ContainerUtil.getLastItem(getInstance(project).myContexts) : null;
   }
 }
