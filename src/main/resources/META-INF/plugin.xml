@@ -28,6 +28,7 @@
         <action class="history.XSplitIncSize" text="XSplitIncSize"/>
         <action class="history.XSplitDecSize" text="XSplitDecSize"/>
         <action class="history.XOpenInNewSplit" text="XOpenInNewSplit"/>
+        <action class="history.XViewInNewSplit" text="XViewInNewSplit"/>
     </actions>
 
     <depends>com.intellij.modules.lang</depends>
