@@ -36,27 +36,31 @@ public class XOpenInNewSplit extends AnAction implements DumbAware {
       srcWindow.split(SwingConstants.VERTICAL, true, null, true);
       Editor targetEditor = manager.getSelectedTextEditor();
       // prevent idea from opening file in other editor:
-      DataManager.registerDataProvider(editor.getComponent(), new DataProvider() {
-        @Nullable
-        @Override
-        public Object getData(@NotNull String dataId) {
-          if (OpenFileDescriptor.NAVIGATE_IN_EDITOR.is(dataId)) {
-            return targetEditor;
+      JComponent srcEditorComponent = editor.getComponent();
+      try {
+        DataManager.registerDataProvider(srcEditorComponent, new DataProvider() {// unregister it later?
+          @Nullable
+          @Override
+          public Object getData(@NotNull String dataId) {
+            if (OpenFileDescriptor.NAVIGATE_IN_EDITOR.is(dataId)) {
+              return targetEditor;
+            }
+            return null;
           }
-          return null;
+        });
+        OpenSourceUtil.navigate(true, false, navs);
+        EditorWindow dstWindow = manager.getCurrentWindow();// dst window because we asked to focus on new window during split
+        XManager xmanager = XManager.getInstance(project);
+        xmanager.copyHistory(srcWindow, dstWindow);
+        IdeDocumentHistoryImpl.PlaceInfo srcPlace = XManager.getPlaceInfo(project, srcWindow);
+        XWindowHistory dstHistory = xmanager.getHistory(dstWindow);
+        if (srcPlace != null && dstHistory != null) {
+          dstHistory.addPlace(XManager.replaceWindow(srcPlace, dstWindow));
         }
-      });
-      OpenSourceUtil.navigate(true, false, navs);
-      Editor resultEditor = manager.getSelectedTextEditor();
-      EditorWindow dstWindow = manager.getCurrentWindow();
-      XManager xmanager = XManager.getInstance(project);
-      xmanager.copyHistory(srcWindow, dstWindow);
-      IdeDocumentHistoryImpl.PlaceInfo srcPlace = XManager.getPlaceInfo(project, srcWindow);
-      XWindowHistory dstHistory = xmanager.getHistory(dstWindow);
-      if (srcPlace != null && dstHistory != null) {
-        dstHistory.addPlace(XManager.replaceWindow(srcPlace, dstWindow));
+        xmanager.addCurrentPlace(dstWindow);
+      } finally {
+        DataManager.removeDataProvider(srcEditorComponent);
       }
-      xmanager.addCurrentPlace(dstWindow);
     }, "XOpenInNewSplit", null);
   }
 }
