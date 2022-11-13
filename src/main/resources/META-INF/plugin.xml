@@ -3,7 +3,7 @@
     <name>Split</name>
     <vendor>me</vendor>
 
-    <idea-version since-build="191.1"/>
+    <idea-version since-build="222.2"/>
 
     <version>8</version>
 
@@ -30,9 +30,6 @@
         <action class="history.XSplitDecSize" text="XSplitDecSize"/>
         <action class="history.XOpenInNewSplit" text="XOpenInNewSplit"/>
         <action class="history.XViewInNewSplit" text="XViewInNewSplit"/>
-        <action class="history.XOpenInNewContext" text="XOpenInNewContext"/>
-        <action class="history.XPushContext" text="XPushContext"/>
-        <action class="history.XPopContext" text="XPopContext"/>
     </actions>
 
     <depends>com.intellij.modules.lang</depends>
