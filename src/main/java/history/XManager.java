@@ -121,7 +121,7 @@ public class XManager implements Disposable {
       return null;
     }
     FileEditorManagerEx editorManager = FileEditorManagerEx.getInstanceEx(project);
-    VirtualFile file = editorManager.getFile(fileEditor);
+    VirtualFile file = fileEditor.getFile();
     if (file == null) {
       return null;
     }
