@@ -9,8 +9,7 @@
 
     <description>
         Plugin provides 'back', 'forward', 'go to declaration', 'split', and 'open in new split' actions
-        preserving per window split navigation history + actions for increasing/decreasing split size and
-        operations on contexts.
+        preserving per window split navigation history + actions for increasing/decreasing split size.
         All actions start with 'X' to simplify search in a keymap.
     </description>
 
