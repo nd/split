@@ -1,10 +1,7 @@
 package history;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.IdeActions;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
@@ -42,5 +39,10 @@ public class XGotoDeclaration extends AnAction implements DumbAware {
   @Override
   public void update(@NotNull AnActionEvent e) {
     myDelegate.update(e);
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return myDelegate.getActionUpdateThread();
   }
 }

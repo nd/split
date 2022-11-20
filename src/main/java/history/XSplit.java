@@ -1,5 +1,6 @@
 package history;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
@@ -45,5 +46,10 @@ public class XSplit extends AnAction implements DumbAware {
   @Override
   public void update(@NotNull AnActionEvent e) {
     myDelegate.update(e);
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return myDelegate.getActionUpdateThread();
   }
 }

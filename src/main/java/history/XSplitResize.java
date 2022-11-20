@@ -1,5 +1,6 @@
 package history;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
@@ -80,5 +81,10 @@ public class XSplitResize extends AnAction {
   @Override
   public boolean isDumbAware() {
     return true;
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 }

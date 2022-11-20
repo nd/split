@@ -1,5 +1,6 @@
 package history;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAware;
@@ -20,5 +21,10 @@ public class XForward extends AnAction implements DumbAware {
     if (history != null) {
       e.getPresentation().setEnabled(history.canForward());
     }
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 }
