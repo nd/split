@@ -6,17 +6,17 @@ import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
 import com.intellij.openapi.fileEditor.ex.FileEditorWithProvider;
+import com.intellij.openapi.fileEditor.impl.EditorComposite;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
-import com.intellij.openapi.fileEditor.impl.EditorWithProviderComposite;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
-import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.messages.MessageBusConnection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,7 +68,7 @@ public class XManager implements Disposable {
 
   private void cleanObsoleteHistories() {
     EditorWindow[] live = FileEditorManagerEx.getInstanceEx(myProject).getWindows();
-    List<EditorWindow> obsolete = ContainerUtil.newSmartList();
+    List<EditorWindow> obsolete = new ArrayList<>(1);
     for (EditorWindow window : myHistories.keySet()) {
       if (!ArrayUtil.contains(window, live)) {
         obsolete.add(window);
@@ -97,7 +97,7 @@ public class XManager implements Disposable {
   // code for getting current placeInfo from IdeDocumentHistoryImpl:
   @Nullable
   static IdeDocumentHistoryImpl.PlaceInfo getPlaceInfo(@NotNull Project project, @NotNull EditorWindow window) {
-    EditorWithProviderComposite selectedEditor = window.getSelectedEditor();
+    EditorComposite selectedEditor = window.getSelectedComposite();
     FileEditorWithProvider editor = selectedEditor != null ? selectedEditor.getSelectedWithProvider() : null;
     return editor != null ? createPlaceInfo(project, editor.getFileEditor(), editor.getProvider()) : null;
   }

@@ -34,17 +34,7 @@ public class XSplitResize extends AnAction {
     }
     EditorWindow currentWindow = FileEditorManagerEx.getInstanceEx(project).getCurrentWindow();
     EditorTabbedContainer tabbedPane = currentWindow.getTabbedPane();
-    Component currentWindowComponent;
-    if (tabbedPane != null) {
-      currentWindowComponent = tabbedPane.getComponent();
-    } else {
-      // tab placement = none
-      JComponent editorComponent = currentWindow.getSelectedEditor().getComponent();
-      currentWindowComponent = editorComponent != null ? editorComponent.getParent() : null;
-    }
-    if (currentWindowComponent == null) {
-      return;
-    }
+    Component currentWindowComponent = tabbedPane.getComponent();
     Splitter splitter = findSplitter(currentWindow.getOwner(), currentWindowComponent);
     if (splitter != null) {
       float delta = splitter.getFirstComponent().getComponent(0) == currentWindowComponent ? myDelta : - myDelta;
