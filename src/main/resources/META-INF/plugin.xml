@@ -5,7 +5,15 @@
 
     <idea-version since-build="222.2"/>
 
-    <version>10</version>
+    <version>11</version>
+
+    <description>
+        <![CDATA[
+      <li>fixes open in new split in idea 2023.2</li>
+      <li>fixes restart on plugin installation</li>
+    </ul>
+    ]]>
+    </description>
 
     <description>
         Plugin provides 'back', 'forward', 'go to declaration', 'split', and 'open in new split' actions
