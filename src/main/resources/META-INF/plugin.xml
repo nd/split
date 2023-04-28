@@ -13,12 +13,6 @@
         All actions start with 'X' to simplify search in a keymap.
     </description>
 
-    <project-components>
-        <component>
-            <implementation-class>history.XManager</implementation-class>
-        </component>
-    </project-components>
-
     <actions>
         <action class="history.XBack" text="XBack"/>
         <action class="history.XForward" text="XForward"/>

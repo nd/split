@@ -1,6 +1,7 @@
 package history;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.fileEditor.*;
@@ -21,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class XManager implements Disposable {
+@Service(Service.Level.PROJECT)
+public final class XManager implements Disposable {
   private final Project myProject;
   private final Map<EditorWindow, XWindowHistory> myHistories = new ConcurrentHashMap<>();
 
@@ -80,7 +82,7 @@ public class XManager implements Disposable {
   }
 
   public static XManager getInstance(Project project) {
-    return project.getComponent(XManager.class);
+    return project.getService(XManager.class);
   }
 
   @Override
