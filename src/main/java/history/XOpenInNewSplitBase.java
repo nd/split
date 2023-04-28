@@ -4,13 +4,17 @@ import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
+import com.intellij.openapi.fileEditor.impl.EditorComposite;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.pom.Navigatable;
+import com.intellij.util.ObjectUtils;
 import com.intellij.util.OpenSourceUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,7 +64,21 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
           dstHistory.addPlace(XManager.replaceWindow(srcPlace, dstWindow));
         }
         xmanager.addCurrentPlace(dstWindow);
-        if (!myNavigateToNewSplit) {
+
+        if (myNavigateToNewSplit) {
+          TextEditor textEditor = ObjectUtils.tryCast(manager.getSelectedEditor(), TextEditor.class);
+          if (textEditor != null) {
+            Editor editorAfterNavigate = textEditor.getEditor();
+            EditorWindow currentWindow = manager.getCurrentWindow();
+            FileEditorManager.getInstance(project).runWhenLoaded(editorAfterNavigate, () -> {
+              EditorComposite selectedComposite = currentWindow.getSelectedComposite();
+              JComponent component = selectedComposite != null ? selectedComposite.getPreferredFocusedComponent() : null;
+              if (component != null) {
+                component.requestFocusInWindow();
+              }
+            });
+          }
+        } else {
           // return back to src window
           manager.setCurrentWindow(manager.getNextWindow(dstWindow));
         }
