@@ -121,6 +121,29 @@ class XWindowHistory {
     }
   }
 
+  synchronized boolean gotoToPrevFile() {
+    IdeDocumentHistoryImpl.PlaceInfo currentPlace = XManager.getCurrentPlaceInfo(myProject);
+    if (currentPlace == null) {
+      return false;
+    }
+    IdeDocumentHistoryImpl.PlaceInfo placeWithPrevFile = null;
+    int index = myIndex;
+    while (index >= 0) {
+      IdeDocumentHistoryImpl.PlaceInfo prevPlace = myPlaces.get(index);
+      if (!prevPlace.getFile().equals(currentPlace.getFile())) {
+        placeWithPrevFile = prevPlace;
+        break;
+      }
+      index--;
+    }
+    if (placeWithPrevFile != null) {
+      myIndex = index;
+      gotoPlace(placeWithPrevFile);
+      return true;
+    }
+    return false;
+  }
+
   private int getForwardIndex() {
     // Forward action is possible only after one or more back action was executed.
     // Before the first back action stack looks like this:

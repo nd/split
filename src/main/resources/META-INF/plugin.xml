@@ -31,6 +31,7 @@
         <action class="history.XSplitDecSize" text="XSplitDecSize"/>
         <action class="history.XOpenInNewSplit" text="XOpenInNewSplit"/>
         <action class="history.XViewInNewSplit" text="XViewInNewSplit"/>
+        <action class="history.XOpenPreviousFile" text="XOpenPreviousFile"/>
     </actions>
 
     <depends>com.intellij.modules.lang</depends>
