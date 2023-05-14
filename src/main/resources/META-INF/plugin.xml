@@ -5,12 +5,12 @@
 
     <idea-version since-build="222.2"/>
 
-    <version>11</version>
+    <version>12</version>
 
     <description>
         <![CDATA[
-      <li>fixes open in new split in idea 2023.2</li>
-      <li>fixes restart on plugin installation</li>
+    <ul>
+      <li>added action opening previous file in the current split (XOpenPreviousFile)</li>
     </ul>
     ]]>
     </description>
