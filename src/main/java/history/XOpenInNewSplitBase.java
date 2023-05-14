@@ -46,12 +46,16 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
       Editor targetEditor = manager.getSelectedTextEditor();
       // prevent idea from opening file in other editor:
       JComponent srcEditorComponent = editor.getComponent();
+      DataProvider originalDataProvider = DataManager.getDataProvider(srcEditorComponent);
       try {
+        if (originalDataProvider != null) {
+          DataManager.removeDataProvider(srcEditorComponent);
+        }
         DataManager.registerDataProvider(srcEditorComponent, dataId -> {
           if (OpenFileDescriptor.NAVIGATE_IN_EDITOR.is(dataId)) {
             return targetEditor;
           }
-          return null;
+          return originalDataProvider != null ? originalDataProvider.getData(dataId) : null;
         });
         OpenSourceUtil.navigate(true, false, navs);
         EditorWindow dstWindow = manager.getCurrentWindow();// dst window because we asked to focus on new window during split
@@ -84,6 +88,9 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
         }
       } finally {
         DataManager.removeDataProvider(srcEditorComponent);
+        if (originalDataProvider != null) {
+          DataManager.registerDataProvider(srcEditorComponent, originalDataProvider);
+        }
       }
     }, "XOpenInNewSplit", null);
   }
