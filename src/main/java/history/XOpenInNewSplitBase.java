@@ -2,6 +2,8 @@ package history;
 
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -13,6 +15,7 @@ import com.intellij.openapi.fileEditor.impl.EditorWindow;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.pom.Navigatable;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.OpenSourceUtil;
@@ -38,15 +41,18 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
       return;
     }
     FileEditorManagerEx manager = FileEditorManagerEx.getInstanceEx(project);
-    CommandProcessor.getInstance().executeCommand(project, () -> {
-      manager.unsplitAllWindow();
-      EditorWindow srcWindow = manager.getCurrentWindow();
-      srcWindow.closeAllExcept(srcWindow.getSelectedFile());
-      srcWindow.split(SwingConstants.VERTICAL, true, null, true);
+    JComponent srcEditorComponent = editor.getComponent();
+    DataProvider originalDataProvider = DataManager.getDataProvider(srcEditorComponent);
+    manager.unsplitAllWindow();
+    EditorWindow srcWindow = manager.getCurrentWindow();
+    XManager xmanager = XManager.getInstance(project);
+    if (srcWindow == null) {
+      return;
+    }
+    srcWindow.split(SwingConstants.VERTICAL, true, null, true);
+    ApplicationManager.getApplication().invokeLater(() -> {
       Editor targetEditor = manager.getSelectedTextEditor();
-      // prevent idea from opening file in other editor:
-      JComponent srcEditorComponent = editor.getComponent();
-      DataProvider originalDataProvider = DataManager.getDataProvider(srcEditorComponent);
+
       try {
         if (originalDataProvider != null) {
           DataManager.removeDataProvider(srcEditorComponent);
@@ -58,8 +64,8 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
           return originalDataProvider != null ? originalDataProvider.getData(dataId) : null;
         });
         OpenSourceUtil.navigate(true, false, navs);
+
         EditorWindow dstWindow = manager.getCurrentWindow();// dst window because we asked to focus on new window during split
-        XManager xmanager = XManager.getInstance(project);
         xmanager.copyHistory(srcWindow, dstWindow);
         IdeDocumentHistoryImpl.PlaceInfo srcPlace = XManager.getPlaceInfo(project, srcWindow);
         IdeDocumentHistoryImpl.PlaceInfo dstPlace = XManager.getPlaceInfo(project, dstWindow);
@@ -68,21 +74,7 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
           dstHistory.addPlace(XManager.replaceWindow(srcPlace, dstWindow));
         }
         xmanager.addCurrentPlace(dstWindow);
-
-        if (myNavigateToNewSplit) {
-          TextEditor textEditor = ObjectUtils.tryCast(manager.getSelectedEditor(), TextEditor.class);
-          if (textEditor != null) {
-            Editor editorAfterNavigate = textEditor.getEditor();
-            EditorWindow currentWindow = manager.getCurrentWindow();
-            FileEditorManager.getInstance(project).runWhenLoaded(editorAfterNavigate, () -> {
-              EditorComposite selectedComposite = currentWindow.getSelectedComposite();
-              JComponent component = selectedComposite != null ? selectedComposite.getPreferredFocusedComponent() : null;
-              if (component != null) {
-                component.requestFocusInWindow();
-              }
-            });
-          }
-        } else {
+        if (!myNavigateToNewSplit) {
           // return back to src window
           manager.setCurrentWindow(manager.getNextWindow(dstWindow));
         }
@@ -92,7 +84,7 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
           DataManager.registerDataProvider(srcEditorComponent, originalDataProvider);
         }
       }
-    }, "XOpenInNewSplit", null);
+    }, ModalityState.NON_MODAL);
   }
 
   @Override
