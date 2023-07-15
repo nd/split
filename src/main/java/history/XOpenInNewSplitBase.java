@@ -1,6 +1,7 @@
 package history;
 
 import com.intellij.ide.DataManager;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -12,7 +13,10 @@ import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
 import com.intellij.openapi.fileEditor.impl.EditorComposite;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
+import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
+import com.intellij.openapi.options.advanced.AdvancedSettings;
+import com.intellij.openapi.options.advanced.AdvancedSettingsImpl;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.IdeFocusManager;
@@ -52,7 +56,8 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
     srcWindow.split(SwingConstants.VERTICAL, true, null, true);
     ApplicationManager.getApplication().invokeLater(() -> {
       Editor targetEditor = manager.getSelectedTextEditor();
-
+      boolean originalOpenInactiveSplitter = AdvancedSettings.getBoolean(FileEditorManagerImpl.EDITOR_OPEN_INACTIVE_SPLITTER);
+      AdvancedSettings.setBoolean(FileEditorManagerImpl.EDITOR_OPEN_INACTIVE_SPLITTER, false);
       try {
         if (originalDataProvider != null) {
           DataManager.removeDataProvider(srcEditorComponent);
@@ -79,6 +84,7 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
           manager.setCurrentWindow(manager.getNextWindow(dstWindow));
         }
       } finally {
+        AdvancedSettings.setBoolean(FileEditorManagerImpl.EDITOR_OPEN_INACTIVE_SPLITTER, originalOpenInactiveSplitter);
         DataManager.removeDataProvider(srcEditorComponent);
         if (originalDataProvider != null) {
           DataManager.registerDataProvider(srcEditorComponent, originalDataProvider);
