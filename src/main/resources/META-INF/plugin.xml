@@ -34,5 +34,9 @@
         <action class="history.XOpenPreviousFile" text="XOpenPreviousFile"/>
     </actions>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="history.XProjectActivity"/>
+    </extensions>
+
     <depends>com.intellij.modules.lang</depends>
 </idea-plugin>
