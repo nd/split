@@ -5,12 +5,12 @@
 
     <idea-version since-build="232"/>
 
-    <version>12</version>
+    <version>13</version>
 
     <description>
         <![CDATA[
     <ul>
-      <li>added action opening previous file in the current split (XOpenPreviousFile)</li>
+      <li>v13 fixes open in new split for IDEs versions 2023.2+</li>
     </ul>
     ]]>
     </description>
