@@ -5,6 +5,8 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
+import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl;
+import com.intellij.openapi.options.advanced.AdvancedSettings;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -23,10 +25,13 @@ public class XGotoDeclaration extends AnAction implements DumbAware {
     }
     PsiElement[] elements = GotoDeclarationAction.findAllTargetElements(project, editor, editor.getCaretModel().getOffset());
     setUseCurrentWindow(elements, true);
+    boolean originalOpenInactiveSplitter = AdvancedSettings.getBoolean(FileEditorManagerImpl.EDITOR_OPEN_INACTIVE_SPLITTER);
+    AdvancedSettings.setBoolean(FileEditorManagerImpl.EDITOR_OPEN_INACTIVE_SPLITTER, false);
     try {
       myDelegate.actionPerformed(e);
     } finally {
       setUseCurrentWindow(elements, null);
+      AdvancedSettings.setBoolean(FileEditorManagerImpl.EDITOR_OPEN_INACTIVE_SPLITTER, originalOpenInactiveSplitter);
     }
   }
 
