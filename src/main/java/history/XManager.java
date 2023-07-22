@@ -40,8 +40,9 @@ public final class XManager implements Disposable {
           getHistory(window).addPlace(commandStartPlace);
         }
         IdeDocumentHistoryImpl.PlaceInfo commandEndPlace = getCurrentPlaceInfo(project);
-        if (commandEndPlace != null) {
-          getHistory(commandEndPlace.getWindow()).addPlace(commandEndPlace);
+        EditorWindow endWindow = commandEndPlace != null ? commandEndPlace.getWindow() : null;
+        if (endWindow != null) {
+          getHistory(endWindow).addPlace(commandEndPlace);
         }
       }
 
