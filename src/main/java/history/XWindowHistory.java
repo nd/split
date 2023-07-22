@@ -60,7 +60,7 @@ class XWindowHistory {
 
   private static boolean sameLine(@NotNull IdeDocumentHistoryImpl.PlaceInfo place1,
                                   @NotNull IdeDocumentHistoryImpl.PlaceInfo place2) {
-    if (!place1.getFile().isValid() || place2.getFile().isValid()) {
+    if (!place1.getFile().isValid() || !place2.getFile().isValid()) {
       return false;
     }
     if (place1.getFile().getPath().equals(place2.getFile().getPath())) {
