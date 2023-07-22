@@ -32,6 +32,7 @@
         <action class="history.XOpenInNewSplit" text="XOpenInNewSplit"/>
         <action class="history.XViewInNewSplit" text="XViewInNewSplit"/>
         <action class="history.XOpenPreviousFile" text="XOpenPreviousFile"/>
+        <action class="history.XSaveCurrentPlace" text="XSaveCurrentPlace"/>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
