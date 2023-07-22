@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.messages.MessageBusConnection;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,11 +33,15 @@ public final class XManager implements Disposable {
     MessageBusConnection bus = project.getMessageBus().connect(this);
     bus.subscribe(IdeDocumentHistoryImpl.RecentPlacesListener.TOPIC, new IdeDocumentHistoryImpl.RecentPlacesListener() {
       @Override
-      public void recentPlaceAdded(@NotNull IdeDocumentHistoryImpl.PlaceInfo place, boolean isChanged) {
-        EditorWindow window = place.getWindow();
+      public void recentPlaceAdded(@NotNull IdeDocumentHistoryImpl.PlaceInfo commandStartPlace, boolean isChanged) {
+        EditorWindow window = commandStartPlace.getWindow();
         if (!isChanged && window != null) {
           cleanObsoleteHistories();
-          myHistories.computeIfAbsent(window, it -> new XWindowHistory(myProject)).addPlace(place);
+          getHistory(window).addPlace(commandStartPlace);
+        }
+        IdeDocumentHistoryImpl.PlaceInfo commandEndPlace = getCurrentPlaceInfo(project);
+        if (commandEndPlace != null) {
+          getHistory(commandEndPlace.getWindow()).addPlace(commandEndPlace);
         }
       }
 
@@ -47,16 +52,15 @@ public final class XManager implements Disposable {
   }
 
   @Nullable
+  @Contract("null->null;!null->!null")
   public XWindowHistory getHistory(@Nullable EditorWindow window) {
-    return window != null ? myHistories.get(window) : null;
+    return window != null ? myHistories.computeIfAbsent(window, it -> new XWindowHistory(myProject)) : null;
   }
 
   void copyHistory(@Nullable EditorWindow src, @Nullable EditorWindow dst) {
     if (src != null && dst != null) {
       XWindowHistory history = getHistory(src);
-      if (history != null) {
-        myHistories.put(dst, history.copyForWindow(dst));
-      }
+      myHistories.put(dst, history.copyForWindow(dst));
     }
   }
 
