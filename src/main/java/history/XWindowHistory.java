@@ -52,11 +52,10 @@ class XWindowHistory {
     myIndex++;
     if (myIndex < myPlaces.size()) {
       myPlaces.set(myIndex, place);
-      myMaxIndex = myIndex;
     } else {
       myPlaces.add(place);
-      myMaxIndex++;
     }
+    myMaxIndex = myIndex;
   }
 
   private static boolean sameLine(@NotNull IdeDocumentHistoryImpl.PlaceInfo place1,
