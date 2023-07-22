@@ -10,6 +10,40 @@ import static org.junit.Assert.*;
 
 public class HistTest {
   @Test
+  public void insertPlace() {
+    Hist<String> h = new Hist<>();
+    h.insertPlace("1");
+    assertPlace(h, "1", null);
+    assertEquals(List.of("1"), h.getPlaces());
+
+    h.insertPlace("2");
+    assertPlace(h, "2", null);
+    assertEquals(List.of("1", "2"), h.getPlaces());
+
+    h.insertPlace("3");
+    assertPlace(h, "3", null);
+    assertEquals(List.of("1", "2", "3"), h.getPlaces());
+
+    h.back();
+    h.back();
+    assertPlace(h, "1", "2");
+
+    h.insertPlace("1");
+    // nothing happens because it is the same as prev:
+    assertPlace(h, "1", "2");
+    assertEquals(List.of("1", "2", "3"), h.getPlaces());
+
+    h.insertPlace("2");
+    // nothing happens because it is the same as next:
+    assertPlace(h, "1", "2");
+    assertEquals(List.of("1", "2", "3"), h.getPlaces());
+
+    h.insertPlace("4");
+    assertPlace(h, "4", "2");
+    assertEquals(List.of("1", "4", "2", "3"), h.getPlaces());
+  }
+
+  @Test
   public void radials() {
     Hist<String> h = new Hist<>();
     h.pushPlace("1");

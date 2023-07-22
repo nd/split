@@ -21,11 +21,22 @@ class Hist<T> {
     return myNextIdx > 0;
   }
 
-  void pushPlace(T t) {
+  void pushPlace(@NotNull T t) {
     while (myNextIdx < myPlaces.size()) {
       myPlaces.remove(myPlaces.size() - 1);
     }
     myPlaces.add(t);
+    myNextIdx++;
+  }
+
+  void insertPlace(@NotNull T t) {
+    if (areEqual(getPrevPlace(), t)) {
+      return;
+    }
+    if (areEqual(getNextPlace(), t)) {
+      return;
+    }
+    myPlaces.add(myNextIdx, t);
     myNextIdx++;
   }
 
@@ -55,7 +66,7 @@ class Hist<T> {
     return false;
   }
 
-  boolean areEqual(T p1, T p2) {
+  boolean areEqual(@Nullable T p1, @Nullable T p2) {
     return Objects.equals(p1, p2);
   }
 
