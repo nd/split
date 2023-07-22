@@ -44,11 +44,11 @@ class XWindowHistory {
     if (myIndex >= 0 && sameLine(myPlaces.get(myIndex), place)) {
       return false;
     }
-    insertPlace(place);
+    insertPlaceAndCutForwards(place);
     return true;
   }
 
-  private synchronized void insertPlace(@NotNull IdeDocumentHistoryImpl.PlaceInfo place) {
+  private synchronized void insertPlaceAndCutForwards(@NotNull IdeDocumentHistoryImpl.PlaceInfo place) {
     myIndex++;
     if (myIndex < myPlaces.size()) {
       myPlaces.set(myIndex, place);
@@ -184,7 +184,7 @@ class XWindowHistory {
     XWindowHistory copy = new XWindowHistory(myProject);
     for (IdeDocumentHistoryImpl.PlaceInfo place : myPlaces) {
       // copy without checks for same line, it was checked when the original history was filled
-      copy.insertPlace(new IdeDocumentHistoryImpl.PlaceInfo(place.getFile(), place.getNavigationState(),
+      copy.insertPlaceAndCutForwards(new IdeDocumentHistoryImpl.PlaceInfo(place.getFile(), place.getNavigationState(),
               place.getEditorTypeId(), window, place.getCaretPosition()));
     }
     return copy;
