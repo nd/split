@@ -1,6 +1,8 @@
 package history;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.command.CommandEvent;
+import com.intellij.openapi.command.CommandListener;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.RangeMarker;
@@ -21,19 +23,37 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service(Service.Level.PROJECT)
 public final class XManager implements Disposable {
   private final Project myProject;
   private final Map<EditorWindow, XWindowHistory> myHistories = new ConcurrentHashMap<>();
+  private final AtomicReference<String> myFinishingCommandName = new AtomicReference<>();
 
   public XManager(@NotNull Project project) {
     myProject = project;
     MessageBusConnection bus = project.getMessageBus().connect(this);
+    bus.subscribe(CommandListener.TOPIC, new CommandListener() {
+      @Override
+      public void beforeCommandFinished(@NotNull CommandEvent event) {
+        myFinishingCommandName.set(event.getCommandName());
+      }
+    });
+    Set<String> excludedCommands = Set.of(
+            "Find Next / Move to Next Occurrence",
+            "Find Previous / Move to Previous Occurrence"
+    );
     bus.subscribe(IdeDocumentHistoryImpl.RecentPlacesListener.TOPIC, new IdeDocumentHistoryImpl.RecentPlacesListener() {
       @Override
       public void recentPlaceAdded(@NotNull IdeDocumentHistoryImpl.PlaceInfo commandStartPlace, boolean isChanged) {
+        // it is called from command finished, so we can use the name stored in beforeCommandFinished
+        String commandName = myFinishingCommandName.getAndSet(null);
+        if (excludedCommands.contains(commandName)) {
+          return;
+        }
         EditorWindow window = commandStartPlace.getWindow();
         if (!isChanged && window != null) {
           cleanObsoleteHistories();
