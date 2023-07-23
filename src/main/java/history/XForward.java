@@ -10,7 +10,7 @@ public class XForward extends AnAction implements DumbAware {
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
     XWindowHistory history = XManager.getCurrentWindowHistory(e.getProject());
-    if (history != null && history.canForward()) {
+    if (history != null) {
       history.forward();
     }
   }
@@ -18,9 +18,7 @@ public class XForward extends AnAction implements DumbAware {
   @Override
   public void update(@NotNull AnActionEvent e) {
     XWindowHistory history = XManager.getCurrentWindowHistory(e.getProject());
-    if (history != null) {
-      e.getPresentation().setEnabled(history.canForward());
-    }
+    e.getPresentation().setEnabled(history != null);
   }
 
   @Override

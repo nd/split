@@ -6,56 +6,36 @@ import com.intellij.openapi.fileEditor.impl.EditorWindow;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /*
  History per window split.
-
- History maintains a stack of places. Places are filled in `addPlace` via the listener registered
- in IdeDocumentHistoryImpl.
-
- MyIndex is the index of the place for the next back action or -1 if there is no back places.
- The stack of places only grows and never shrinks. When one navigates back we decrease the index,
- but don't remove elements after the index so it is possible to return forward to places one left.
- However when a new place is added all elements after the current index become invalid,
- it is not possible to reach them anymore. This is handled by myMaxIndex: we don't access elements
- located at positions greater than myMaxIndex.
-
- During the back action we check if we are opening the last place. If that's the case we add
- the current location to the stack of places to make it possible to reach it via forward action.
  */
 class XWindowHistory {
   private final Project myProject;
-  private final List<IdeDocumentHistoryImpl.PlaceInfo> myPlaces = new ArrayList<>();
-  private int myIndex = -1;
-  private int myMaxIndex = -1;
+  private final XHist<IdeDocumentHistoryImpl.PlaceInfo> myHist = new XHist<>() {
+    @Override
+    boolean areEqual(IdeDocumentHistoryImpl.@Nullable PlaceInfo p1, IdeDocumentHistoryImpl.@Nullable PlaceInfo p2) {
+      return p1 != null && p2 != null && sameOffset(p1, p2);
+    }
+
+    @Override
+    boolean shouldBeJoined(IdeDocumentHistoryImpl.@Nullable PlaceInfo p1, IdeDocumentHistoryImpl.@Nullable PlaceInfo p2) {
+      return p1 != null && p2 != null && sameLine(p1, p2);
+    }
+  };
   private volatile boolean myNavigationInProgress;
 
   XWindowHistory(@NotNull Project project) {
     myProject = project;
   }
 
-  synchronized boolean addPlace(@NotNull IdeDocumentHistoryImpl.PlaceInfo place) {
-    if (myNavigationInProgress) {
-      return false;
+  synchronized void addPlace(@NotNull IdeDocumentHistoryImpl.PlaceInfo place) {
+    if (!myNavigationInProgress) {
+      myHist.pushPlace(place);
     }
-    if (myIndex >= 0 && sameLine(myPlaces.get(myIndex), place)) {
-      return false;
-    }
-    insertPlaceAndCutForwards(place);
-    return true;
-  }
-
-  private synchronized void insertPlaceAndCutForwards(@NotNull IdeDocumentHistoryImpl.PlaceInfo place) {
-    myIndex++;
-    if (myIndex < myPlaces.size()) {
-      myPlaces.set(myIndex, place);
-    } else {
-      myPlaces.add(place);
-    }
-    myMaxIndex = myIndex;
   }
 
   private static boolean sameLine(@NotNull IdeDocumentHistoryImpl.PlaceInfo place1,
@@ -92,31 +72,33 @@ class XWindowHistory {
   }
 
   synchronized void back() {
-    if (canBack()) {
+    if (myHist.canBackward()) {
       IdeDocumentHistoryImpl.PlaceInfo currentPlace = XManager.getCurrentPlaceInfo(myProject);
       if (currentPlace == null) {
         return;
       }
-      if (myIndex == myMaxIndex) {
-        if (addPlace(currentPlace)) {
-          myIndex--;
+      if (myHist.backFromPlace(currentPlace)) {
+        IdeDocumentHistoryImpl.PlaceInfo prevPlace = myHist.getPrevPlace();
+        if (prevPlace != null) {
+          gotoPlace(prevPlace);
         }
-      }
-      IdeDocumentHistoryImpl.PlaceInfo place;
-      do {
-        place = myPlaces.get(myIndex--);
-      } while (myIndex >= 0 && place != null && sameOffset(place, currentPlace));
-      if (place != null) {
-        gotoPlace(place);
       }
     }
   }
 
   synchronized void forward() {
-    if (canForward()) {
-      IdeDocumentHistoryImpl.PlaceInfo place = myPlaces.get(getForwardIndex());
-      myIndex++;
-      gotoPlace(place);
+    if (myHist.canForward()) {
+      IdeDocumentHistoryImpl.PlaceInfo currentPlace = XManager.getCurrentPlaceInfo(myProject);
+      if (currentPlace == null) {
+        return;
+      }
+      if (myHist.forwardFromPlace(currentPlace)) {
+        // we went forward, so the next place is behind us
+        IdeDocumentHistoryImpl.PlaceInfo nextPlace = myHist.getPrevPlace();
+        if (nextPlace != null) {
+          gotoPlace(nextPlace);
+        }
+      }
     }
   }
 
@@ -126,36 +108,21 @@ class XWindowHistory {
       return false;
     }
     IdeDocumentHistoryImpl.PlaceInfo placeWithPrevFile = null;
-    int index = myIndex;
-    while (index >= 0) {
-      IdeDocumentHistoryImpl.PlaceInfo prevPlace = myPlaces.get(index);
+    List<IdeDocumentHistoryImpl.PlaceInfo> places = myHist.getPlaces();
+    int i = myHist.getNextIdx() - 1;
+    for (; i >= 0; i--) {
+      IdeDocumentHistoryImpl.PlaceInfo prevPlace = places.get(i);
       if (!prevPlace.getFile().equals(currentPlace.getFile())) {
         placeWithPrevFile = prevPlace;
         break;
       }
-      index--;
     }
     if (placeWithPrevFile != null) {
-      myIndex = index;
+      myHist.setNextPlace(i);
       gotoPlace(placeWithPrevFile);
       return true;
     }
     return false;
-  }
-
-  private int getForwardIndex() {
-    // Forward action is possible only after one or more back action was executed.
-    // Before the first back action stack looks like this:
-    //
-    //   [p_0, p_1, ..., p_n-1, p_n], myIndex=n
-    //
-    // during back we add current location at p_n+1 position, retrieve place
-    // and decrement myIndex:
-    //
-    //   [p_0, p_1, ..., p_n-1, p_n, p_n+1], myIndex=n-1, place p_n is opened in the editor
-    //
-    // To go forward to the place p_n+1 we have to use myIndex+2.
-    return myIndex + 2;
   }
 
   private synchronized void gotoPlace(@NotNull IdeDocumentHistoryImpl.PlaceInfo place) {
@@ -169,21 +136,11 @@ class XWindowHistory {
     }
   }
 
-  synchronized boolean canBack() {
-    return 0 <= myIndex && myIndex <= myMaxIndex;
-  }
-
-  synchronized boolean canForward() {
-    int forwardIndex = getForwardIndex();
-    return forwardIndex <= myMaxIndex && myPlaces.get(forwardIndex) != null;
-  }
-
   @NotNull
   synchronized XWindowHistory copyForWindow(@NotNull EditorWindow window) {
     XWindowHistory copy = new XWindowHistory(myProject);
-    for (IdeDocumentHistoryImpl.PlaceInfo place : myPlaces) {
-      // copy without checks for same line, it was checked when the original history was filled
-      copy.insertPlaceAndCutForwards(new IdeDocumentHistoryImpl.PlaceInfo(place.getFile(), place.getNavigationState(),
+    for (IdeDocumentHistoryImpl.PlaceInfo place : myHist.getPlaces()) {
+      copy.myHist.pushPlace(new IdeDocumentHistoryImpl.PlaceInfo(place.getFile(), place.getNavigationState(),
               place.getEditorTypeId(), window, place.getCaretPosition()));
     }
     return copy;

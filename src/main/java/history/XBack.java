@@ -10,7 +10,7 @@ public class XBack extends AnAction implements DumbAware {
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
     XWindowHistory history = XManager.getCurrentWindowHistory(e.getProject());
-    if (history != null && history.canBack()) {
+    if (history != null) {
       history.back();
     }
   }
@@ -18,9 +18,7 @@ public class XBack extends AnAction implements DumbAware {
   @Override
   public void update(@NotNull AnActionEvent e) {
     XWindowHistory history = XManager.getCurrentWindowHistory(e.getProject());
-    if (history != null) {
-      e.getPresentation().setEnabled(history.canBack());
-    }
+    e.getPresentation().setEnabled(history != null);
   }
 
   @Override
