@@ -51,7 +51,7 @@ public final class XManager implements Disposable {
       public void recentPlaceAdded(@NotNull IdeDocumentHistoryImpl.PlaceInfo commandStartPlace, boolean isChanged) {
         // it is called from command finished, so we can use the name stored in beforeCommandFinished
         String commandName = myFinishingCommandName.getAndSet(null);
-        if (excludedCommands.contains(commandName)) {
+        if (commandName != null && excludedCommands.contains(commandName)) {
           return;
         }
         EditorWindow window = commandStartPlace.getWindow();
