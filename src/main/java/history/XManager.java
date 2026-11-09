@@ -9,6 +9,7 @@ import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
 import com.intellij.openapi.fileEditor.ex.FileEditorWithProvider;
+import com.intellij.openapi.fileEditor.ex.PlaceInfo;
 import com.intellij.openapi.fileEditor.impl.EditorComposite;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
 import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
@@ -57,9 +58,9 @@ public final class XManager implements Disposable {
         EditorWindow window = commandStartPlace.getWindow();
         if (!isChanged && window != null) {
           cleanObsoleteHistories();
-          getHistory(window).addPlace(commandStartPlace);
+          getHistory(window).addPlace(commandStartPlace.getPlace());
         }
-        IdeDocumentHistoryImpl.PlaceInfo commandEndPlace = getCurrentPlaceInfo(project);
+        PlaceInfo commandEndPlace = getCurrentPlaceInfo(project);
         EditorWindow endWindow = commandEndPlace != null ? commandEndPlace.getWindow() : null;
         if (endWindow != null) {
           getHistory(endWindow).addPlace(commandEndPlace);
@@ -87,7 +88,7 @@ public final class XManager implements Disposable {
 
   void addCurrentPlace(@Nullable EditorWindow window) {
     XWindowHistory history = window != null ? getHistory(window) : null;
-    IdeDocumentHistoryImpl.PlaceInfo place = history != null ? getPlaceInfo(window.getManager().getProject(), window) : null;
+    PlaceInfo place = history != null ? getPlaceInfo(window.getManager().getProject(), window) : null;
     if (place != null) {
       history.addPlace(place);
     }
@@ -116,21 +117,21 @@ public final class XManager implements Disposable {
   }
 
   @NotNull
-  static IdeDocumentHistoryImpl.PlaceInfo replaceWindow(@NotNull IdeDocumentHistoryImpl.PlaceInfo info, @NotNull EditorWindow window) {
-    return new IdeDocumentHistoryImpl.PlaceInfo(
+  static PlaceInfo replaceWindow(@NotNull PlaceInfo info, @NotNull EditorWindow window) {
+    return new PlaceInfo(
             info.getFile(), info.getNavigationState(), info.getEditorTypeId(), window, info.getCaretPosition());
   }
 
   // code for getting current placeInfo from IdeDocumentHistoryImpl:
   @Nullable
-  static IdeDocumentHistoryImpl.PlaceInfo getPlaceInfo(@NotNull Project project, @NotNull EditorWindow window) {
+  static PlaceInfo getPlaceInfo(@NotNull Project project, @NotNull EditorWindow window) {
     EditorComposite selectedEditor = window.getSelectedComposite();
     FileEditorWithProvider editor = selectedEditor != null ? selectedEditor.getSelectedWithProvider() : null;
     return editor != null ? createPlaceInfo(project, editor.getFileEditor(), editor.getProvider()) : null;
   }
 
   @Nullable
-  static IdeDocumentHistoryImpl.PlaceInfo getCurrentPlaceInfo(@NotNull Project project) {
+  static PlaceInfo getCurrentPlaceInfo(@NotNull Project project) {
     FileEditorWithProvider editor = getSelectedEditor(project);
     return editor != null ? createPlaceInfo(project, editor.getFileEditor(), editor.getProvider()) : null;
   }
@@ -143,7 +144,7 @@ public final class XManager implements Disposable {
   }
 
   @Nullable
-  private static IdeDocumentHistoryImpl.PlaceInfo createPlaceInfo(@NotNull Project project, @NotNull FileEditor fileEditor, FileEditorProvider fileProvider) {
+  private static PlaceInfo createPlaceInfo(@NotNull Project project, @NotNull FileEditor fileEditor, FileEditorProvider fileProvider) {
     if (!fileEditor.isValid()) {
       return null;
     }
@@ -153,7 +154,7 @@ public final class XManager implements Disposable {
       return null;
     }
     FileEditorState state = fileEditor.getState(FileEditorStateLevel.NAVIGATION);
-    return new IdeDocumentHistoryImpl.PlaceInfo(file, state, fileProvider.getEditorTypeId(), editorManager.getCurrentWindow(), getCaretPosition(fileEditor));
+    return new PlaceInfo(file, state, fileProvider.getEditorTypeId(), editorManager.getCurrentWindow(), getCaretPosition(fileEditor));
   }
 
   @Nullable

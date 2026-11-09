@@ -1,33 +1,32 @@
-buildscript {
-    ext.kotlin_version = '1.9.0'
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
 plugins {
-  id 'org.jetbrains.intellij' version '1.11.0'
   id 'java'
+  id 'org.jetbrains.kotlin.jvm' version '2.3.0'
+  id 'org.jetbrains.intellij.platform' version '2.10.5'
 }
 
 repositories {
   mavenCentral()
+  intellijPlatform {
+    defaultRepositories()
+  }
 }
 
-apply plugin: 'idea'
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.intellij'
-apply plugin: 'java'
-
-intellij {
-  version = '232-EAP-SNAPSHOT'
-  updateSinceUntilBuild = false
-}
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+  intellijPlatform {
+    local(providers.gradleProperty('ideaPath'))
+  }
 }
+
+intellijPlatform {
+  buildSearchableOptions = false
+  pluginConfiguration {
+    ideaVersion {
+      sinceBuild = '263.8043'
+      untilBuild = provider { null }
+    }
+  }
+}
+
 kotlin {
-    jvmToolchain(17)
+  jvmToolchain(25)
 }

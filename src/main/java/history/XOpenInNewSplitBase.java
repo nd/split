@@ -11,10 +11,10 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
+import com.intellij.openapi.fileEditor.ex.PlaceInfo;
 import com.intellij.openapi.fileEditor.impl.EditorComposite;
 import com.intellij.openapi.fileEditor.impl.EditorWindow;
 import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl;
-import com.intellij.openapi.fileEditor.impl.IdeDocumentHistoryImpl;
 import com.intellij.openapi.options.advanced.AdvancedSettings;
 import com.intellij.openapi.options.advanced.AdvancedSettingsImpl;
 import com.intellij.openapi.project.DumbAware;
@@ -72,8 +72,8 @@ public class XOpenInNewSplitBase extends AnAction implements DumbAware {
 
         EditorWindow dstWindow = manager.getCurrentWindow();// dst window because we asked to focus on new window during split
         xmanager.copyHistory(srcWindow, dstWindow);
-        IdeDocumentHistoryImpl.PlaceInfo srcPlace = XManager.getPlaceInfo(project, srcWindow);
-        IdeDocumentHistoryImpl.PlaceInfo dstPlace = XManager.getPlaceInfo(project, dstWindow);
+        PlaceInfo srcPlace = XManager.getPlaceInfo(project, srcWindow);
+        PlaceInfo dstPlace = XManager.getPlaceInfo(project, dstWindow);
         XWindowHistory dstHistory = xmanager.getHistory(dstWindow);
         if (srcPlace != null && dstHistory != null) {
           dstHistory.addPlace(XManager.replaceWindow(srcPlace, dstWindow));
